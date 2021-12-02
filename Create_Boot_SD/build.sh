@@ -3,6 +3,7 @@
 BOOT_DIR=/mnt/RPi_boot
 ROOT_DIR=/mnt/RPi_root
 LINUX_DIR=~/repos/linux
+BUSYBOX_DIR=~/repos/busybox
 BIN_FILES_DIR=~/repos/RPi_LK/Create_Boot_SD
 
 SD1=`find /dev/ -name "sd?"`1
@@ -55,6 +56,35 @@ sudo touch $BOOT_DIR/cmdline.txt
 printf "console=tty1 console=serial0,115200 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait\n" | sudo tee $BOOT_DIR/cmdline.txt > /dev/null 
 
 sudo make -j$((`nproc` -1)) modules_install
+
+cd $BUSYBOX_DIR
+
+read -p "Use default BusyBox setings [Y/n]: " $OPTION
+if [[ $OPTION == "n" || $OPTION == "N" ]]; then
+    sudo make menuconfig
+    # Setting Location -> Setting Value
+    # Settings -> Build static binary (no shared libraries)	Enable
+    # Settings -> Cross compiler prefix	(arm-Linux-gnueabihf-)
+    # Settings -> Destination path for ‘make install’	Same as INSTALL_MOD_PATH from kernel modules step
+fi
+
+sudo make -j$((`nproc` -1))
+sudo make -j$((`nproc` -1)) install
+
+sudo mkdir $ROOT_DIR/proc 
+sudo mkdir $ROOT_DIR/sys 
+sudo mkdir $ROOT_DIR/dev 
+sudo mkdir $ROOT_DIR/etc
+sudo mkdir $ROOT_DIR/etc/init.d
+sudo touch $ROOT_DIR/etc/init.d/rcS
+sudo chmod +x $ROOT_DIR/etc/init.d/rcS
+
+printf "#!/bin/sh
+mount -t proc none /proc
+mount -t sysfs none /sys
+
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+mdev -s\n" | sudo tee $ROOT_DIR/etc/init.d/rcS > /dev/null
 
 sudo umount $BOOT_DIR
 sudo umount $ROOT_DIR
