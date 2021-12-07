@@ -1,0 +1,31 @@
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	compatible = "brcm,bcm2835";
+
+	fragment@0 {
+		// Configure the gpio pin controller
+		target = <&gpio>;
+		__overlay__ {
+			hc-sr04: hc-sr04@0 {
+				brcm,pins = <13 15>; // gpio number
+				brcm,function = <1 0>; // 0 = input, 1 = output
+				brcm,pull = <1 0>; // 0 = none, 1 = pull down, 2 = pull up
+			};
+		};
+	};
+
+	fragment@1 {
+        target-path = "/soc";
+        __overlay__ {
+            compatible = "hc-sr04";
+            pinctrl-names = "default";
+            pinctrl-0 = <&hc-sr04>;
+            pins = <13 15>; // gpio number
+            status = "okay";
+        };
+    };
+};

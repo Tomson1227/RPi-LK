@@ -1,0 +1,31 @@
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	compatible = "brcm,bcm2835";
+
+	fragment@0 {
+		// Configure the gpio pin controller
+		target = <&gpio>;
+		__overlay__ {
+			stepper: stepper@0 {
+				brcm,pins = <6 13 19 26>; // gpio number
+				brcm,function = <1 1 1 1>; // 0 = input, 1 = output
+				brcm,pull = <1 1 1 1>; // 0 = none, 1 = pull down, 2 = pull up
+			};
+		};
+	};
+
+	fragment@1 {
+        target-path = "/soc";
+        __overlay__ {
+            compatible = "stepper";
+            pinctrl-names = "default";
+            pinctrl-0 = <&stepper>;
+            pins = <6 13 19 26>; // gpio number
+            status = "okay";
+        };
+    };
+};

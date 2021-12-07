@@ -1,0 +1,20 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2835";
+
+	fragment@0 {
+		target = <&i2cbus>;
+		__overlay__ {
+			status = "okay";
+			#address-cells = <1>;
+            #size-cells = <0>;
+			
+            hmc5883l: hmc5883l@1e {
+				compatible = "hmc5883l";
+				reg = <0x1e>;
+			};
+		};
+	};
+};
